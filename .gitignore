@@ -1,0 +1,20 @@
+# Environment variables — NEVER commit this
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Trained model file
+fake_news_ensemble.pkl
+
+# Dataset
+WELFake_Dataset.csv
+Fake.csv
+True.csv
+Fake1.csv
+True1.csv
+
+# VS Code
+.vscode/
