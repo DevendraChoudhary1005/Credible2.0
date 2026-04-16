@@ -27,7 +27,7 @@ Credible uses a **two-step verification pipeline**:
 
 - **Language:** Python
 - **Machine Learning:** Scikit-Learn
-- **LLM / Inference:** [Groq API](https://groq.com/)
+- **LLM / Inference:** [Groq API] (https://groq.com/)
 - **Web Framework:** Streamlit 
 
 ---
@@ -47,3 +47,4 @@ Follow these instructions to get Credible running on your local machine.
    ```bash
    git clone [https://github.com/yourusername/credible.git](https://github.com/yourusername/credible.git)
    cd credible
+   
