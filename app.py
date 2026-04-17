@@ -318,7 +318,6 @@ def hybrid_analyse(text: str, payload: dict, use_groq: bool) -> dict:
             "word_count":    word_count,
         }
 
-
 # ── Charts ────────────────────────────────────────────────────────────────────
 def gauge_chart(fake_prob: float, real_prob: float):
     fig = go.Figure(go.Indicator(
