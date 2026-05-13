@@ -256,7 +256,7 @@ if "groq_configured" not in st.session_state:
     _api_key = os.getenv("GROQ_API_KEY", "")
     if _api_key and _api_key != "your_groq_api_key_here":
         try:
-            configure_gemini(_api_key)
+            configure_groq(_api_key)
             st.session_state.groq_configured = True
         except Exception:
             st.session_state.groq_configured = False
