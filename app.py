@@ -13,7 +13,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 
 from ensemble_model   import load_or_train, predict, preprocess
-from gemini_verifier import configure_gemini, gemini_fact_check
+from groq_verifier import configure_groq, groq_fact_check
 
 # ── Page Config ───────────────────────────────────────────────────────────────
 st.set_page_config(
