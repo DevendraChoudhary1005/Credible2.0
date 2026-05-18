@@ -291,7 +291,7 @@ def hybrid_analyse(text: str, payload: dict, use_groq: bool) -> dict:
 
     if escalate:
         with st.spinner("🤖 ML confidence low — escalating to Groq (Llama 3.3 70B)..."):
-            groq_result = gemini_fact_check(text)
+            groq_result = groq_fact_check(text)
 
         return {
             "engine":        "Groq",
