@@ -3,7 +3,7 @@
 
 **Credible** is an advanced fake news detection system designed to combat misinformation. By leveraging a multi-model ensemble of traditional ML algorithms for rapid text analysis and the Groq API for cross-referencing claims against live web data, Credible delivers high-accuracy credibility scores for news articles, tweets, and digital content.
 
----
+--- 
 ## ⚡ How It Works
 
 Credible uses a **two-step verification pipeline**:
