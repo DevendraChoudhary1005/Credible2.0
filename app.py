@@ -1,11 +1,3 @@
-"""
-app.py  -  Credible | Hybrid ML + Groq Fake News Detection
-========================================================
-How it works:
-- ML Ensemble handles high-confidence predictions (fast, free)
-- Groq API handles low-confidence / short text (smart, accurate)
-"""
-
 import time
 import streamlit as st
 import pandas as pd
