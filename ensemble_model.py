@@ -22,6 +22,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import nltk
+import gdown
 
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
@@ -64,14 +65,41 @@ def preprocess(text: str) -> str:
 
 
 # ── Load WELFake Dataset ──────────────────────────────────────────────────────
+# NOTE: WELFake_Dataset.csv is too large for a plain `docs.google.com/uc?...`
+# link — Google Drive serves an HTML "can't scan for viruses" confirmation
+# page instead of the raw file for anything over ~25-100MB, which is what
+# pandas was choking on (it was parsing HTML as CSV). gdown handles that
+# confirmation flow correctly, and we cache the file locally so it's only
+# downloaded once per container instance instead of on every rerun.
+
+WELFAKE_FILE_ID = "1bjKkh-EMPQ8lvlHjeuyeOjtt8iDMIe3V"
+WELFAKE_LOCAL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "welfake_dataset.csv")
+
+
+def _download_welfake(local_path: str) -> None:
+    url = f"https://drive.google.com/uc?id={WELFAKE_FILE_ID}"
+    print(f"\nDownloading WELFake dataset via gdown -> {local_path}")
+    gdown.download(url, local_path, quiet=False)
+
+    # Sanity check: a failed/HTML download will be tiny. The real dataset
+    # is tens of MB, so anything under ~1MB almost certainly isn't the CSV.
+    if not os.path.exists(local_path) or os.path.getsize(local_path) < 1_000_000:
+        raise RuntimeError(
+            "WELFake download failed or returned an unexpected (too small) file. "
+            "Check that the Google Drive file is shared as 'Anyone with the link' "
+            "and that the file ID is correct."
+        )
+
+
 def load_data():
-    welfake_path = "https://docs.google.com/uc?export=download&id=1bjKkh-EMPQ8lvlHjeuyeOjtt8iDMIe3V"
-    
-    print("\nLoading WELFake dataset from Cloud storage...")
+    # Download once, then reuse the cached local copy on subsequent runs.
+    if not os.path.exists(WELFAKE_LOCAL_PATH) or os.path.getsize(WELFAKE_LOCAL_PATH) < 1_000_000:
+        _download_welfake(WELFAKE_LOCAL_PATH)
+    else:
+        print(f"\nUsing cached WELFake dataset -> {WELFAKE_LOCAL_PATH}")
+
     print("-" * 55)
-    
-    # 2. Pass the URL directly to pandas
-    df = pd.read_csv(welfake_path)
+    df = pd.read_csv(WELFAKE_LOCAL_PATH)
     print(f"Raw rows loaded   : {len(df)}")
 
     # Rename label column if needed
