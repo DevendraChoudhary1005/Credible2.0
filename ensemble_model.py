@@ -65,22 +65,14 @@ def preprocess(text: str) -> str:
 
 # ── Load WELFake Dataset ──────────────────────────────────────────────────────
 def load_data():
-    base_dir     = r"D:\DEEPu\AI Engineer Roadmap\Python Projects\pythonProject\Credible"
-    welfake_path = os.path.join(base_dir, "WELFake_Dataset.csv")
-
-    if not os.path.exists(welfake_path):
-        raise FileNotFoundError(
-            f"\nERROR: WELFake_Dataset.csv not found!"
-            f"\nExpected : {welfake_path}"
-            f"\nDownload : https://www.kaggle.com/datasets/saurabhshahane/fake-news-classification"
-            f"\nThen place WELFake_Dataset.csv in:\n         {base_dir}\n"
-        )
-
-    print("\nLoading WELFake dataset...")
+    welfake_path = "https://docs.google.com/uc?export=download&id=1bjKkh-EMPQ8lvlHjeuyeOjtt8iDMIe3V"
+    
+    print("\nLoading WELFake dataset from Cloud storage...")
     print("-" * 55)
-
+    
+    # 2. Pass the URL directly to pandas
     df = pd.read_csv(welfake_path)
-    print(f"  Raw rows loaded   : {len(df)}")
+    print(f"Raw rows loaded   : {len(df)}")
 
     # Rename label column if needed
     if "Label" in df.columns and "label" not in df.columns:
