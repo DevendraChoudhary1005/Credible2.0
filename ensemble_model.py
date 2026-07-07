@@ -145,7 +145,34 @@ def load_data():
 
 
 # ── Model Save Path ───────────────────────────────────────────────────────────
-MODEL_PATH = r"D:\DEEPu\AI Engineer Roadmap\Python Projects\pythonProject\Credible2.0\fake_news_ensemble.pkl"
+# Use a path relative to this file so it works both locally and on Streamlit
+# Cloud (the old Windows "D:\..." path only existed on your own machine).
+MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fake_news_ensemble.pkl")
+
+# Hosted copy of the already-trained model. If MODEL_PATH doesn't exist locally
+# (e.g. on a fresh Streamlit Cloud deploy), we download it from here instead of
+# training from scratch, which is what was blowing past Streamlit's resource/time
+# limits.
+MODEL_URL = "https://huggingface.co/datasets/DC-1005/credible-fakenews-model/resolve/main/fake_news_ensemble.pkl"
+
+
+def _download_model(local_path: str) -> None:
+    import requests
+
+    print(f"\nDownloading trained ensemble model -> {local_path}")
+    with requests.get(MODEL_URL, stream=True, timeout=60) as r:
+        r.raise_for_status()
+        with open(local_path, "wb") as f:
+            for chunk in r.iter_content(chunk_size=1024 * 1024):
+                if chunk:
+                    f.write(chunk)
+
+    # Sanity check: a failed download (e.g. an HTML error page) will be tiny.
+    if not os.path.exists(local_path) or os.path.getsize(local_path) < 1_000_000:
+        raise RuntimeError(
+            "Model download failed or returned an unexpected (too small) file. "
+            "Check that the Hugging Face URL is correct and publicly accessible."
+        )
 
 
 # ── Build Pipelines ───────────────────────────────────────────────────────────
@@ -366,11 +393,24 @@ def train(save: bool = True):
 
 # ── Load or Train ─────────────────────────────────────────────────────────────
 def load_or_train() -> dict:
-    if os.path.exists(MODEL_PATH):
+    # 1. Use the local cached copy if we already have it.
+    if os.path.exists(MODEL_PATH) and os.path.getsize(MODEL_PATH) >= 1_000_000:
         print(f"Loading saved model from: {MODEL_PATH}")
         with open(MODEL_PATH, "rb") as f:
             return pickle.load(f)
-    print("No saved model found. Training from scratch...")
+
+    # 2. Otherwise, fetch the pre-trained model from Hugging Face instead of
+    #    training in-app (Streamlit Cloud doesn't have the resources/time to
+    #    train this ensemble on every cold start).
+    try:
+        _download_model(MODEL_PATH)
+        print(f"Loading downloaded model from: {MODEL_PATH}")
+        with open(MODEL_PATH, "rb") as f:
+            return pickle.load(f)
+    except Exception as e:
+        print(f"Could not download pre-trained model ({e}). Falling back to training from scratch...")
+
+    # 3. Last resort: train locally.
     return train(save=True)
 
 
