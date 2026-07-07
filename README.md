@@ -46,4 +46,8 @@ Follow these instructions to get Credible running on your local machine.
    ```bash
    git clone [https://github.com/yourusername/credible.git](https://github.com/yourusername/credible.git)
    cd credible
+
+### To Run the Project
+
+🔗 **Project Link:** [credible2.streamlit.app](https://credible2.streamlit.app)
    
