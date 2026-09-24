@@ -6,8 +6,8 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Trained model file
-fake_news_ensemble.pkl
+# Trained model file (Removed so we can push the optimized lightweight model)
+# fake_news_ensemble.pkl
 
 # Dataset
 WELFake_Dataset.csv

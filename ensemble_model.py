@@ -181,7 +181,7 @@ def _make_pipelines():
     # ── 1. Logistic Regression ────────────────────────────────────
     lr = Pipeline([
         ("tfidf", TfidfVectorizer(
-            max_features=100_000,
+            max_features=10_000,
             ngram_range=(1, 2),
             sublinear_tf=True,
             min_df=2,
@@ -190,7 +190,7 @@ def _make_pipelines():
             analyzer="word",
         )),
         ("clf", LogisticRegression(
-            max_iter=2000,
+            max_iter=1000,
             C=10.0,
             solver="saga",
             class_weight="balanced",
@@ -202,7 +202,7 @@ def _make_pipelines():
     # ── 2. Random Forest ──────────────────────────────────────────
     rf = Pipeline([
         ("tfidf", TfidfVectorizer(
-            max_features=30_000,
+            max_features=10_000,
             ngram_range=(1, 2),
             sublinear_tf=True,
             min_df=2,
@@ -210,7 +210,7 @@ def _make_pipelines():
             strip_accents="unicode",
         )),
         ("clf", RandomForestClassifier(
-            n_estimators=200,
+            n_estimators=75,
             max_depth=None,
             min_samples_split=5,
             min_samples_leaf=2,
@@ -224,7 +224,7 @@ def _make_pipelines():
     # ── 3. Multinomial Naive Bayes ────────────────────────────────
     mnb = Pipeline([
         ("tfidf", TfidfVectorizer(
-            max_features=100_000,
+            max_features=10_000,
             ngram_range=(1, 3),
             sublinear_tf=False,
             min_df=2,
@@ -237,7 +237,7 @@ def _make_pipelines():
     # ── 4. Gradient Boosting ──────────────────────────────────────
     gbc = Pipeline([
         ("tfidf", TfidfVectorizer(
-            max_features=20_000,
+            max_features=10_000,
             ngram_range=(1, 2),
             sublinear_tf=True,
             min_df=3,
@@ -245,8 +245,8 @@ def _make_pipelines():
             strip_accents="unicode",
         )),
         ("clf", GradientBoostingClassifier(
-            n_estimators=300,
-            max_depth=5,
+            n_estimators=100,
+            max_depth=4,
             learning_rate=0.1,
             subsample=0.8,
             max_features="sqrt",
@@ -258,7 +258,7 @@ def _make_pipelines():
     # ── 5. Linear SVC ─────────────────────────────────────────────
     svc = Pipeline([
         ("tfidf", TfidfVectorizer(
-            max_features=100_000,
+            max_features=10_000,
             ngram_range=(1, 2),
             sublinear_tf=True,
             min_df=2,
@@ -268,7 +268,7 @@ def _make_pipelines():
         )),
         ("clf", CalibratedClassifierCV(
             LinearSVC(
-                max_iter=5000,
+                max_iter=2000,
                 C=1.0,
                 class_weight="balanced",
                 dual=True,
