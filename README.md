@@ -12,7 +12,7 @@
 ![Groq](https://img.shields.io/badge/Groq-LLM-f55036)
 ![Dataset](https://img.shields.io/badge/WELFake-72K_articles-161616)
 
-[Overview](#overview) &nbsp;|&nbsp; [How it works](#how-it-works) &nbsp;|&nbsp; [Features](#features) &nbsp;|&nbsp; [Quick start](#quick-start) &nbsp;|&nbsp; [Deployment](#deployment-notes) &nbsp;|&nbsp; [Roadmap](#roadmap)
+[Live demo](https://credible2-0.onrender.com/) &nbsp;|&nbsp; [Overview](#overview) &nbsp;|&nbsp; [How it works](#how-it-works) &nbsp;|&nbsp; [Features](#features) &nbsp;|&nbsp; [Quick start](#quick-start) &nbsp;|&nbsp; [Deployment](#deployment-notes) &nbsp;|&nbsp; [Roadmap](#roadmap)
 
 </div>
 
@@ -23,6 +23,8 @@
 Fake news spreads faster than corrections. Most detectors are either one model that is easy to fool, or an LLM call with nothing behind it.
 
 **Credible uses both.** Five classic ML classifiers give a fast, consistent baseline. A Groq-hosted LLM then reviews the text and explains, in plain English, what looks reliable or suspicious.
+
+**Try it live:** [https://credible2-0.onrender.com/](https://credible2-0.onrender.com/)
 
 <div align="center">
 <img src="assets/result-card.svg" alt="Sample Credible result showing a Likely fake verdict with 91% confidence and each model's vote" width="640">
@@ -147,6 +149,10 @@ The live demo runs on a free tier, so the first load after inactivity can take a
 
 **Built by Devendra Choudhary**
 B.Tech CSE (AI & ML), JECRC University, Jaipur
+
+[Live demo](https://credible2-0.onrender.com/) &nbsp;|&nbsp; [GitHub](https://github.com/DevendraChoudhary1005) &nbsp;|&nbsp; [LinkedIn](https://linkedin.com/in/devendra-choudhary-dc101005) &nbsp;|&nbsp; [Email](mailto:dchoudhary10102005@gmail.com)
+
+</div>
 
 [GitHub](https://github.com/DevendraChoudhary1005) &nbsp;|&nbsp; [LinkedIn](https://linkedin.com/in/devendra-choudhary-dc101005) &nbsp;|&nbsp; [Email](mailto:dchoudhary10102005@gmail.com)
 
