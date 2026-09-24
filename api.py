@@ -5,8 +5,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from ensemble_model import load_or_train, predict
-from groq_verifier import configure_groq, groq_fact_check
+from backend.ensemble_model import load_or_train, predict
+from backend.groq_verifier import configure_groq, groq_fact_check
 
 # Load environment variables
 load_dotenv()
@@ -94,6 +94,6 @@ def analyze_text(req: AnalyzeRequest):
 # Serve the Frontend directly from FastAPI to keep it simple!
 @app.get("/")
 def serve_frontend():
-    html_path = os.path.join(os.path.dirname(__file__), "index.html")
+    html_path = os.path.join(os.path.dirname(__file__), "frontend", "index.html")
     with open(html_path, "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
