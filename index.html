@@ -655,15 +655,17 @@
                         <!-- Final Results -->
                         <div id="finalResult" class="d-none">
                             <div class="d-flex align-items-center gap-4 bg-light p-4 rounded-4 border">
-                                <div class="score-circle-modern danger-low" style="width: 100px; height: 100px; flex-shrink: 0;">
+                                <div id="resultCircle" class="score-circle-modern flex-shrink-0" style="width: 100px; height: 100px;">
                                     <div class="score-circle-modern-content">
-                                        <span class="fw-bold fs-3 text-danger">18%</span>
+                                        <span id="resultScore" class="fw-bold fs-3">--%</span>
                                     </div>
                                 </div>
                                 <div>
-                                    <h4 class="fw-bold mb-1 text-danger">Highly Suspicious</h4>
-                                    <p class="mb-2 small-text text-muted"><span class="fw-bold text-dark">Groq Context (LLaMA 3.3):</span> The input triggered multiple flags for hyperbole. Cross-referencing live data indicates this claim is likely fabricated or highly exaggerated.</p>
-                                    <a href="https://credible2.streamlit.app" target="_blank" class="btn btn-sm btn-outline-dark fw-bold px-3 py-2 mt-2" style="border-radius: 50px;">Run Real Report on Web App <i class="bi bi-arrow-right"></i></a>
+                                    <h4 id="resultLabel" class="fw-bold mb-1">Analyzing...</h4>
+                                    <p class="mb-2 small-text text-muted">
+                                        <span id="resultEngine" class="fw-bold text-dark">Engine Context:</span> 
+                                        <span id="resultReasoning">...</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -695,7 +697,7 @@
                 });
             });
 
-            /* --- Modal Simulation Logic --- */
+            /* --- API Integration Logic --- */
             const analyzeBtn = document.getElementById('analyzeBtn');
             const resultsArea = document.getElementById('resultsArea');
             const loadingState = document.getElementById('loadingState');
@@ -715,8 +717,8 @@
                 analyzeBtn.innerHTML = 'Run Fact-Check Pipeline';
             });
 
-            analyzeBtn.addEventListener('click', () => {
-                // If on Text tab, require some input for simulation
+            analyzeBtn.addEventListener('click', async () => {
+                // Validation
                 const textTabActive = document.getElementById('text-pane').classList.contains('active');
                 if(textTabActive && articleInput.value.trim() === '') {
                     articleInput.classList.add('is-invalid');
@@ -724,33 +726,70 @@
                     return;
                 }
 
-                // Start simulation
+                // Start Loading UI
                 analyzeBtn.disabled = true;
-                analyzeBtn.innerHTML = 'Analyzing...';
+                analyzeBtn.innerHTML = 'Connecting to Backend Models...';
                 resultsArea.classList.remove('d-none');
                 loadingState.classList.remove('d-none');
                 finalResult.classList.add('d-none');
-                loadingText.innerText = '1. Running 5 ML Models...';
+                loadingText.innerText = '1. Sending text to Python API...';
 
-                // Simulate pipeline steps
-                setTimeout(() => {
-                    if (groqCheckbox.checked) {
-                        loadingText.innerText = '2. Low Confidence: Escalating to Groq (LLaMA 3.3)...';
+                try {
+                    // Send real request to the FastAPI backend!
+                    const response = await fetch('/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            text: articleInput.value,
+                            use_groq: groqCheckbox.checked 
+                        })
+                    });
+
+                    if (!response.ok) throw new Error("API returned an error");
+                    const data = await response.json();
+
+                    // Update UI with REAL data from Python
+                    const score = Math.round(data.confidence * 100);
+                    document.getElementById('resultScore').innerText = `${score}%`;
+                    document.getElementById('resultEngine').innerText = `Engine Context (${data.engine}): `;
+                    document.getElementById('resultReasoning').innerText = data.reasoning;
+
+                    const circle = document.getElementById('resultCircle');
+                    const labelEl = document.getElementById('resultLabel');
+                    const scoreSpan = document.getElementById('resultScore');
+                    
+                    // Reset classes
+                    circle.className = 'score-circle-modern flex-shrink-0';
+                    
+                    if (data.label === 'Real') {
+                        circle.classList.add('success');
+                        labelEl.innerText = 'Verified Credible';
+                        labelEl.className = 'fw-bold mb-1 text-success';
+                        scoreSpan.className = 'fw-bold fs-3 text-success';
+                    } else if (data.label === 'Fake') {
+                        circle.classList.add('danger');
+                        labelEl.innerText = 'Highly Suspicious';
+                        labelEl.className = 'fw-bold mb-1 text-danger';
+                        scoreSpan.className = 'fw-bold fs-3 text-danger';
                     } else {
-                        loadingText.innerText = '2. Evaluating Ensemble Output...';
+                        circle.classList.add('warning');
+                        labelEl.innerText = 'Unverifiable';
+                        labelEl.className = 'fw-bold mb-1 text-warning';
+                        scoreSpan.className = 'fw-bold fs-3 text-warning';
                     }
-                }, 1500);
 
-                setTimeout(() => {
-                    loadingText.innerText = '3. Calculating Final Credibility Score...';
-                }, 3000);
-
-                setTimeout(() => {
-                    // Show final result
+                    // Show Results
                     loadingState.classList.add('d-none');
                     finalResult.classList.remove('d-none');
-                    analyzeBtn.innerHTML = 'Analysis Complete';
-                }, 4000);
+                    analyzeBtn.innerHTML = 'Run Another Fact-Check';
+                    analyzeBtn.disabled = false;
+                    
+                } catch (error) {
+                    console.error("Analysis failed:", error);
+                    loadingText.innerText = '❌ Error connecting to python backend.';
+                    analyzeBtn.innerHTML = 'Try Again';
+                    analyzeBtn.disabled = false;
+                }
             });
         });
     </script>

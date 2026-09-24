@@ -8,6 +8,7 @@ Get your FREE API key at: https://console.groq.com
 """
 
 import json
+import os
 from groq import Groq
 
 # ── Global client ─────────────────────────────────────────────────────────────
@@ -79,7 +80,7 @@ Respond ONLY in this exact JSON format with no extra text or markdown:
 }}"""
 
         response = _client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model=os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b"),
             messages=[
                 {
                     "role": "system",
@@ -110,22 +111,16 @@ Respond ONLY in this exact JSON format with no extra text or markdown:
             "reasoning":  data.get("reasoning", "No reasoning provided."),
             "red_flags":  data.get("red_flags", []),
             "sources":    data.get("sources", []),
-            "engine":     "Groq (Llama 3.3 70B)",
+            "engine":     f"Groq ({os.getenv('GROQ_MODEL', 'qwen/qwen3.8-27b')})",
         }
 
     except json.JSONDecodeError:
         raw_text = response.choices[0].message.content if 'response' in dir() else ""
         return _parse_text_response(raw_text)
 
-    except Exception as e:
-        return {
-            "label":      "Unverifiable",
-            "confidence": 0.5,
-            "reasoning":  f"Groq API error: {str(e)}",
-            "red_flags":  [],
-            "sources":    [],
-            "engine":     "Groq (Llama 3.3 70B)",
-        }
+    except Exception:
+        # User requested fallback: return None if API fails (e.g. rate limit, model decommissioned)
+        return None
 
 
 # ── Fallback text parser ──────────────────────────────────────────────────────
