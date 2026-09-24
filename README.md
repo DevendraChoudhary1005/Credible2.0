@@ -49,5 +49,5 @@ Follow these instructions to get Credible running on your local machine.
 
 ### To Run the Project
 
-🔗 **Project Link:** [credible2.streamlit.app](https://credible2-0.onrender.com/)
+🔗 **Project Link:** [https://credible2-0.onrender.com/](https://credible2-0.onrender.com/)
    
