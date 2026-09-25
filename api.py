@@ -1,5 +1,7 @@
 import os
-from fastapi import FastAPI, HTTPException
+import io
+import pandas as pd
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -90,6 +92,28 @@ def analyze_text(req: AnalyzeRequest):
             "confidence": ml_result["confidence"],
             "reasoning": f"Based on machine learning consensus across 5 models. (Fake Probability: {ml_result['fake_prob']:.0%}, Real Probability: {ml_result['real_prob']:.0%})",
         }
+
+@app.post("/analyze-batch")
+async def analyze_batch(file: UploadFile = File(...)):
+    contents = await file.read()
+    try:
+        df = pd.read_csv(io.BytesIO(contents))
+    except Exception:
+        raise HTTPException(400, "Invalid CSV file format")
+        
+    if "text" not in df.columns:
+        raise HTTPException(400, "CSV must contain a 'text' column")
+        
+    results = []
+    for text in df["text"].dropna().astype(str):
+        r = predict(text, PAYLOAD)
+        results.append({
+            "text": text[:80] + "...",
+            "label": r["label"],
+            "confidence": f"{r['confidence']:.1%}"
+        })
+        
+    return {"results": results}
 
 # Serve the Frontend directly from FastAPI to keep it simple!
 @app.get("/")

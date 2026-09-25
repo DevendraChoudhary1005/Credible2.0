@@ -612,20 +612,15 @@
                         
                         <!-- TXT File Input -->
                         <div class="tab-pane fade" id="file-pane" role="tabpanel">
-                            <label class="form-label text-muted small-text fw-bold text-uppercase letter-spacing-1">Upload a Document</label>
-                            <div class="border rounded-4 p-5 text-center border-dashed bg-light">
-                                <i class="bi bi-file-earmark-text fs-1 text-muted mb-2 d-block"></i>
-                                <p class="mb-0 fw-medium">Drag and drop or <span class="text-primary text-decoration-underline" style="cursor:pointer;">browse</span> to upload (.txt)</p>
-                            </div>
+                            <label class="form-label text-muted small-text fw-bold text-uppercase letter-spacing-1">Upload a Document (.txt)</label>
+                            <input type="file" id="txtFileInput" class="form-control form-control-lg border-dashed" accept=".txt">
                         </div>
 
                         <!-- CSV File Input -->
                         <div class="tab-pane fade" id="csv-pane" role="tabpanel">
-                            <label class="form-label text-muted small-text fw-bold text-uppercase letter-spacing-1">Upload Dataset for Batch Analysis</label>
-                            <div class="border rounded-4 p-5 text-center border-dashed bg-light">
-                                <i class="bi bi-filetype-csv fs-1 text-muted mb-2 d-block"></i>
-                                <p class="mb-0 fw-medium">Drag and drop or <span class="text-primary text-decoration-underline" style="cursor:pointer;">browse</span> to upload (.csv)</p>
-                            </div>
+                            <label class="form-label text-muted small-text fw-bold text-uppercase letter-spacing-1">Upload Dataset (.csv)</label>
+                            <input type="file" id="csvFileInput" class="form-control form-control-lg border-dashed" accept=".csv">
+                            <p class="small-text text-muted mt-2">CSV must contain a <strong>text</strong> column. Batch analysis processes using the fast ML Ensemble.</p>
                         </div>
                     </div>
                     
@@ -718,15 +713,77 @@
             });
 
             analyzeBtn.addEventListener('click', async () => {
-                // Validation
+                // Determine active tab
                 const textTabActive = document.getElementById('text-pane').classList.contains('active');
-                if(textTabActive && articleInput.value.trim() === '') {
-                    articleInput.classList.add('is-invalid');
-                    setTimeout(() => articleInput.classList.remove('is-invalid'), 1000);
-                    return;
+                const fileTabActive = document.getElementById('file-pane').classList.contains('active');
+                const csvTabActive = document.getElementById('csv-pane').classList.contains('active');
+
+                let textToAnalyze = "";
+
+                if (textTabActive) {
+                    textToAnalyze = articleInput.value.trim();
+                    if(textToAnalyze === '') {
+                        articleInput.classList.add('is-invalid');
+                        setTimeout(() => articleInput.classList.remove('is-invalid'), 1000);
+                        return;
+                    }
+                } else if (fileTabActive) {
+                    const fileInput = document.getElementById('txtFileInput');
+                    if(fileInput.files.length === 0) return alert("Please select a .txt file");
+                    textToAnalyze = await fileInput.files[0].text();
+                } else if (csvTabActive) {
+                    const fileInput = document.getElementById('csvFileInput');
+                    if(fileInput.files.length === 0) return alert("Please select a .csv file");
+                    
+                    analyzeBtn.disabled = true;
+                    analyzeBtn.innerHTML = 'Running Batch Analysis...';
+                    resultsArea.classList.remove('d-none');
+                    loadingState.classList.remove('d-none');
+                    finalResult.classList.add('d-none');
+                    loadingText.innerText = 'Processing CSV batch...';
+
+                    try {
+                        const formData = new FormData();
+                        formData.append("file", fileInput.files[0]);
+                        const response = await fetch('/analyze-batch', { method: 'POST', body: formData });
+                        const data = await response.json();
+
+                        if (!response.ok) throw new Error(data.detail || "API Error");
+
+                        // Render table
+                        let tableHTML = `<div class="table-responsive mt-3" style="max-height: 350px; overflow-y: auto;">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light sticky-top">
+                                    <tr><th>Text Snippet</th><th>Verdict</th><th>Confidence</th></tr>
+                                </thead>
+                                <tbody>`;
+                        data.results.forEach(r => {
+                            const badge = r.label === 'Real' ? 'bg-success' : 'bg-danger';
+                            tableHTML += `<tr>
+                                <td class="small-text">${r.text}</td>
+                                <td><span class="badge ${badge}">${r.label}</span></td>
+                                <td>${r.confidence}</td>
+                            </tr>`;
+                        });
+                        tableHTML += `</tbody></table></div>`;
+
+                        finalResult.innerHTML = `
+                            <h5 class="fw-bold mb-1">Batch Analysis Complete (${data.results.length} rows)</h5>
+                            ${tableHTML}
+                        `;
+                        loadingState.classList.add('d-none');
+                        finalResult.classList.remove('d-none');
+                        analyzeBtn.innerHTML = 'Run Another Fact-Check';
+                        analyzeBtn.disabled = false;
+                    } catch (err) {
+                        alert("Batch error: " + err.message);
+                        analyzeBtn.innerHTML = 'Try Again';
+                        analyzeBtn.disabled = false;
+                    }
+                    return; // Exit here for CSV (handled)
                 }
 
-                // Start Loading UI
+                // Start Loading UI for Single Prediction (TXT or Textbox)
                 analyzeBtn.disabled = true;
                 analyzeBtn.innerHTML = 'Connecting to Backend Models...';
                 resultsArea.classList.remove('d-none');
@@ -740,7 +797,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
-                            text: articleInput.value,
+                            text: textToAnalyze,
                             use_groq: groqCheckbox.checked 
                         })
                     });
